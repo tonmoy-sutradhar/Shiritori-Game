@@ -7,6 +7,67 @@ function App() {
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [timer, setTimer] = useState(30);
 
+  // Time count ------------------------------------>>
+  useEffect(() => {
+    if (timer === 0) {
+      handleInvalidWord("timeout");
+      return;
+    }
+    const interval = setInterval(() => setTimer((time) => time - 1), 1000);
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // Word check with given API --------------------->>
+  const checkWord = async () => {
+    try {
+      const res = await axios.get(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
+      );
+      if (res.status === 200 && res.data.length > 0) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  };
+
+  const switchTurn = () => {
+    setTurn(turn === 1 ? 2 : 1);
+    setWord("");
+    setTimer(30);
+  };
+
+  // Invalid word ---->>
+  const handleInvalidWord = () => {
+    setScores({
+      ...scores,
+      [turn === 1 ? "p1" : "p2"]: scores[turn === 1 ? "p1" : "p2"] - 1,
+    });
+    switchTurn();
+  };
+
+  // Submit -------------------------------->>
+  const handleSubmit = async () => {
+    if (word.length < 4)
+      return handleInvalidWord("Write the more than 3 word.");
+    if (history.includes(word)) return handleInvalidWord("Repeated");
+    if (history.length > 0) {
+      const last = history[history.length - 1];
+      if (word[0].toLowerCase() !== last[last.length - 1].toLowerCase()) {
+        return handleInvalidWord("wrong start letter");
+      }
+    }
+
+    setHistory([...history, word]);
+    setScores({
+      ...scores,
+      [turn === 1 ? "p1" : "p2"]: scores[turn === 1 ? "p1" : "p2"] + 1,
+    });
+    switchTurn();
+  };
+
   return (
     <div className="w-[100%] min-h-screen flex items-center justify-center bg-purple-500 p-8">
       <div className="bg-gray-100 shadow-2xl rounded-3xl p-8 w-full">
@@ -33,14 +94,7 @@ function App() {
           {/* Time */}
           <div className="text-center">
             <p className="text-gray-600 text-sm">Time Left</p>
-            <p
-            // className={`text-3xl font-bold ${
-            //   timer <= 3 ? "text-red-500" : "text-green-600"
-            // }`}
-            >
-              {/* {timer}s */}
-              8s
-            </p>
+            <p className={"text-3xl font-bold "}>{timer}s 8s</p>
           </div>
 
           {/* player 2 */}
