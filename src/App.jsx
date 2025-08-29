@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 function App() {
@@ -23,10 +24,7 @@ function App() {
       const res = await axios.get(
         `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
       );
-      if (res.status === 200 && res.data.length > 0) {
-        return true;
-      }
-      return false;
+      return res.status === 200;
     } catch (error) {
       console.log(error);
       return false;
@@ -39,7 +37,7 @@ function App() {
     setTimer(30);
   };
 
-  // Invalid word ---->>
+  // Invalid word ----------------------->>
   const handleInvalidWord = () => {
     setScores({
       ...scores,
@@ -60,6 +58,11 @@ function App() {
       }
     }
 
+    const isValid = await checkWord(word);
+    if (!isValid) {
+      handleInvalidWord();
+    }
+
     setHistory([...history, word]);
     setScores({
       ...scores,
@@ -69,13 +72,16 @@ function App() {
   };
 
   return (
-    <div className="w-[100%] min-h-screen flex items-center justify-center bg-purple-500 p-8">
-      <div className="bg-gray-100 shadow-2xl rounded-3xl p-8 w-[40%]">
+    <div className="w-[100%] min-h-screen flex flex-col items-center justify-center bg-purple-500 p-8">
+      <h1 className="text-5xl font-bold text-indigo-900 mb-6">
+        Tonmoy Sutradhr
+      </h1>
+      <div className="bg-gray-100 shadow-2xl rounded-3xl p-8 lg:w-[50%] md:w-[50%]">
         <h1 className="text-3xl font-bold text-center mb-6 text-indigo-600 underline">
           SHIRITORI GAME
         </h1>
 
-        {/* Player 1 */}
+        {/* -------------------------Player 1----------------------------- */}
         <div className="flex justify-between items-center mb-6">
           <div
             className={`p-4 rounded-xl text-center w-40 ${
@@ -107,7 +113,7 @@ function App() {
           </div>
         </div>
 
-        {/* Input filed */}
+        {/* -----------------------Input filed----------------------------- */}
         <div className="flex gap-2 mb-6">
           <input
             value={word}
@@ -121,6 +127,28 @@ function App() {
           >
             Submit
           </button>
+        </div>
+
+        {/* -----------------------Player word history -----------------------*/}
+        <div>
+          <h3 className="text-xl font-semibold mb-3 text-gray-700">
+            Word History
+          </h3>
+          <div className="bg-gray-100 rounded-lg p-4 h-40 overflow-y-auto shadow-inner">
+            <ul className="space-y-1">
+              {history.length === 0 && (
+                <p className="text-gray-500 text-sm">No words yet...</p>
+              )}
+              {history.map((word, index) => (
+                <li
+                  key={index}
+                  className="px-3 py-2 bg-white rounded-md shadow-sm border text-gray-700"
+                >
+                  {index + 1}. {word}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </div>
